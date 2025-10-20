@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Deleted Records</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .back-link {
+      display: inline-block;
+      margin: 20px 0;
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="index.html" class="back-link">← Back to Inventory</a>
+    <h1>Deleted Records Archive</h1>
+
+    <div class="table-container">
+      <table id="archiveTable" aria-label="Deleted Records">
+        <thead>
+          <tr>
+            <th>Ticket</th>
+            <th>Operator</th>
+            <th>Shift</th>
+            <th>Region</th>
+            <th>Date</th>
+            <th>Source</th>
+            <th>Case Details</th>
+            <th>Action Taken</th>
+            <th>Remark</th>
+            <th>Deleted At</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    if (localStorage.getItem('isLoggedIn') !== 'true') {
+      alert('Please log in first.');
+      window.location.href = 'index.html';
+    }
+
+    const tbody = document.querySelector('#archiveTable tbody');
+    const deletedRecords = JSON.parse(localStorage.getItem('deletedInventoryRecords') || '[]');
+
+    if (deletedRecords.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="10" style="text-align:center; padding:20px;">No deleted records found.</td></tr>`;
+    } else {
+      deletedRecords.forEach(rec => {
+        const row = document.createElement('tr');
+        const fields = ['ticketNumber','operatorName','shift','region','date','source','caseDetails','actionTaken','remark'];
+        fields.forEach(key => {
+          const cell = document.createElement('td');
+          cell.textContent = rec[key] || '';
+          if (['caseDetails','actionTaken','remark'].includes(key)) {
+            cell.classList.add('wide-col');
+          }
+          row.appendChild(cell);
+        });
+        const timeCell = document.createElement('td');
+        timeCell.textContent = new Date(rec.deletedAt).toLocaleString();
+        row.appendChild(timeCell);
+        tbody.appendChild(row);
+      });
+    }
+  </script>
+</body>
+</html>

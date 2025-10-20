@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Handover List</title>
+  <style>
+    :root{--primary:#4a7c59;--bg:#f8f9fa;--card:#fff;--text:#333;--border:#ddd}
+    body{margin:0;font-family:Segoe UI,sans-serif;background-color:var(--bg);color:var(--text);line-height:1.5;padding:10px}
+    .container{max-width:1000px;margin:0 auto}
+    header{text-align:center;padding:16px 0}
+    h1{color:var(--primary);font-size:22px;margin:0}
+    table{width:100%;border-collapse:collapse;margin-top:16px;font-size:14px}
+    th,td{padding:12px 8px;text-align:left;border-bottom:1px solid var(--border)}
+    th{background-color:#f0f5f2;font-weight:600;color:var(--primary);position:sticky;top:0}
+    .ticket-cell{font-weight:600;color:var(--primary);cursor:pointer;text-decoration:underline}
+    @media (max-width:768px){
+      table,thead,tbody,th,td,tr{display:block;width:100%}
+      thead tr{position:absolute;top:-9999px}
+      tr{border:1px solid #ddd;border-radius:12px;padding:16px;margin-bottom:16px;background:white;cursor:pointer}
+      td{padding:8px 0!important;border:none;position:relative;padding-left:30%!important}
+      td::before{content:attr(data-label) ": ";position:absolute;left:12px;top:8px;font-weight:600;color:var(--primary)}
+      td:first-child{padding:0!important;text-align:center;padding-left:0!important}
+      td:first-child::before{display:none}
+      .ticket-cell{padding-left:0!important;text-align:left}
+      .ticket-cell::before{content:"Ticket: "!important}
+    }
+    .detail-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:1000;opacity:0;visibility:hidden;transition:all 0.3s}
+    .detail-overlay.active{opacity:1;visibility:visible}
+    .detail-content{background:white;width:95%;max-width:500px;max-height:90vh;overflow-y:auto;border-radius:12px;padding:20px;position:relative}
+    .detail-close{position:absolute;top:12px;right:16px;font-size:24px;background:none;border:none;cursor:pointer;color:#888}
+    .detail-field{margin:12px 0;padding-bottom:12px;border-bottom:1px solid #eee}
+    .detail-field:last-child{border-bottom:none}
+    .detail-label{font-weight:700;color:var(--primary);margin-bottom:4px}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>📋 Handover List for Next Shift</h1>
+      <p id="generatedTime" style="text-align:center;color:#666;font-size:14px"></p>
+    </header>
+    <table id="handoverTable">
+      <thead>
+        <tr>
+          <th>Ticket</th>
+          <th>Case Details</th>
+          <th>Date</th>
+          <th>Operator</th>
+          <th>Shift</th>
+          <th>Region</th>
+          <th>Source</th>
+          <th>Action Taken</th>
+          <th>Remark</th>
+          <th>Date Modified</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+
+  <div id="detailOverlay" class="detail-overlay">
+    <div class="detail-content">
+      <button class="detail-close" onclick="document.getElementById('detailOverlay').classList.remove('active')">&times;</button>
+      <div id="detailContent"></div>
+    </div>
+  </div>
+
+  <script>
+    function decompressFromUrlSafeBase64(str) {
+      try {
+        const base64 = str.replace(/-/g, '+').replace(/_/g, '/');
+        const json = decodeURIComponent(atob(base64).split('').map(c => {
+          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+        return JSON.parse(json);
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function showRecordDetail(rec) {
+      let html = '<div style="text-align:center;margin-bottom:16px;"><strong>Ticket: ' + rec.ticketNumber + '</strong></div>';
+      html += '<div class="detail-field"><div class="detail-label">Operator</div>' + (rec.operatorName || '') + '</div>';
+      html += '<div class="detail-field"><div class="detail-label">Shift</div>' + (rec.shift || '') + '</div>';
+      html += '<div class="detail-field"><div class="detail-label">Region</div>' + (rec.region || '') + '</div>';
+      html += '<div class="detail-field"><div class="detail-label">Date</div>' + (rec.date || '') + '</div>';
+      html += '<div class="detail-field"><div class="detail-label">Source</div>' + (rec.source || '') + '</div>';
+      html += '<div class="detail-field"><div class="detail-label">Case Details</div>' + (rec.caseDetails || '') + '</div>';
+      html += '<div class="detail-field"><div class="detail-label">Action Taken</div>' + (rec.actionTaken || '') + '</div>';
+      html += '<div class="detail-field"><div class="detail-label">Remark</div>' + (rec.remark || '') + '</div>';
+      html += '<div class="detail-field"><div class="detail-label">Date Modified</div>' + new Date(rec.timestamp).toLocaleString() + '</div>';
+      document.getElementById('detailContent').innerHTML = html;
+      document.getElementById('detailOverlay').classList.add('active');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const hash = window.location.hash.substring(1);
+      const tbody = document.getElementById('tableBody');
+      const timeEl = document.getElementById('generatedTime');
+      
+      if (!hash) {
+        tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:20px;">No data found.</td></tr>';
+        return;
+      }
+
+      const records = decompressFromUrlSafeBase64(hash);
+      if (!records || !Array.isArray(records)) {
+        tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:20px;color:red;">Invalid data.</td></tr>';
+        return;
+      }
+
+      timeEl.textContent = 'Generated on ' + new Date().toLocaleString();
+
+      records.forEach(rec => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td class="ticket-cell">${rec.ticketNumber || ''}</td>
+          <td>${rec.caseDetails || ''}</td>
+          <td>${rec.date || ''}</td>
+          <td>${rec.operatorName || ''}</td>
+          <td>${rec.shift || ''}</td>
+          <td>${rec.region || ''}</td>
+          <td>${rec.source || ''}</td>
+          <td>${rec.actionTaken || ''}</td>
+          <td>${rec.remark || ''}</td>
+          <td>${new Date(rec.timestamp).toLocaleString()}</td>
+        `;
+        row.addEventListener('click', () => showRecordDetail(rec));
+        tbody.appendChild(row);
+      });
+    });
+  </script>
+</body>
+</html> 

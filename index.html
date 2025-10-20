@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Inventory Table</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="loginScreen" class="centered-screen">
+    <form id="loginForm" aria-label="Login Form">
+      <h2>Login</h2>
+      <label for="username">Username</label>
+      <input id="username" type="text" placeholder="Username" required aria-describedby="loginError" />
+      <label for="password">Password</label>
+      <input id="password" type="password" placeholder="Password" required aria-describedby="loginError" />
+      <button type="submit">Login</button>
+      <p id="loginError" class="error-msg" role="alert" aria-live="assertive"></p>
+    </form>
+  </div>
+
+  <div id="app" class="hidden" aria-hidden="true">
+    <header>
+      <h1>Handover Platform NOC</h1>
+      <div class="header-actions">
+        <a href="archive.html" class="btn-link">View Deleted Records</a>
+        <button id="shareHandoverBtn">Share Handover</button>
+        <button id="logoutBtn">Logout</button>
+      </div>
+    </header>
+
+    <div class="summary">
+      Showing <span id="recordCount">0</span> of <span id="totalCount">0</span> records
+    </div>
+
+    <div class="controls">
+      <input id="searchInput" type="text" placeholder="Search..." aria-label="Search records" />
+      <button id="addNewBtn">Add New</button>
+    </div>
+
+    <div id="bulkActionBar" class="bulk-action-bar hidden">
+      <span id="selectedCount">0 records selected</span>
+      <div class="bulk-actions">
+        <button id="bulkEditBtn">Edit</button>
+        <button id="bulkDeleteBtn" class="delete-btn">Delete</button>
+      </div>
+    </div>
+
+    <div class="table-container">
+      <table id="inventoryTable" aria-label="Inventory Records">
+        <thead>
+          <tr>
+            <th><input type="checkbox" id="selectAll" aria-label="Select all records"></th>
+            <th data-sort="ticketNumber">Ticket</th>
+            <th data-sort="operatorName">Operator</th>
+            <th data-sort="shift">Shift</th>
+            <th data-sort="region">Region</th>
+            <th data-sort="date">Date</th>
+            <th data-sort="source">Source</th>
+            <th class="wide-col">Case Details</th>
+            <th class="wide-col">Action Taken</th>
+            <th class="wide-col">Remark</th>
+            <th data-sort="timestamp">Date Modified</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div class="pagination" id="pagination"></div>
+  </div>
+
+  <!-- Modal -->
+  <div id="modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-content">
+      <button id="modalClose" class="close" aria-label="Close modal">&times;</button>
+      <h2 id="modalTitle">Add New Record</h2>
+      <form id="recordForm">
+        <input type="hidden" id="recordIndex" name="recordIndex" />
+        <div class="form-grid">
+          <div class="form-field">
+            <label for="ticketNumber">Ticket Number</label>
+            <input id="ticketNumber" name="ticketNumber" required />
+          </div>
+          <div class="form-field">
+            <label for="operatorName">Operator Name</label>
+            <input id="operatorName" name="operatorName" required />
+          </div>
+          <div class="form-field">
+            <label for="shift">Shift</label>
+            <select id="shift" name="shift" required>
+              <option value="">Select Shift</option>
+              <option value="Morning">Morning</option>
+              <option value="Afternoon">Afternoon</option>
+              <option value="Night">Night</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label for="region">Region</label>
+            <input id="region" name="region" required />
+          </div>
+          <div class="form-field">
+            <label for="date">Date</label>
+            <input type="date" id="date" name="date" required />
+          </div>
+          <div class="form-field">
+            <label for="source">Source</label>
+            <input id="source" name="source" required />
+          </div>
+          <div class="form-field wide-col">
+            <label for="caseDetails">Case Details</label>
+            <textarea id="caseDetails" name="caseDetails" required></textarea>
+          </div>
+          <div class="form-field wide-col">
+            <label for="actionTaken">Action Taken</label>
+            <textarea id="actionTaken" name="actionTaken" required></textarea>
+          </div>
+          <div class="form-field wide-col">
+            <label for="remark">Remark</label>
+            <textarea id="remark" name="remark" required></textarea>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button type="submit">Save</button>
+          <button type="button" id="cancelBtn">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
