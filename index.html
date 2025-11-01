@@ -119,7 +119,15 @@
           </div>
           <div class="form-field">
             <label for="source">Source</label>
-            <input id="source" name="source" required />
+            <select id="source" name="source" required>
+              <option value="">Select Source</option>
+              <option value="Incident ticket">Incident ticket</option>
+              <option value="NMS">NMS</option>
+              <option value="WhatsApp">WhatsApp</option>
+              <option value="Call">Call</option>
+              <option value="Email">Email</option>
+              <option value="Other">Other</option>
+              </select>
           </div>
           <div class="form-field wide-col">
             <label for="caseDetails">Case Details</label>
